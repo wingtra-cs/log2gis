@@ -7,7 +7,7 @@ import zipfile
 import os
 import pydeck as pdk
 
-@st.cache(suppress_st_warning=True, show_spinner=False allow_output_mutation=True)
+@st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
 def create_df(df):
     df_final = pd.DataFrame()
     df_final['id'] = range(len(basis_col))
