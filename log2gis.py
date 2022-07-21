@@ -122,9 +122,8 @@ if uploaded:
                 traj_points = gpd.points_from_xy(traj_gdf['lon'], traj_gdf['lat'])
                 line_geom = LineString(traj_points)
                 
-                gdf_line = gpd.GeoDataFrame(crs='EPSG:4326')
+                gdf_line = gpd.GeoDataFrame(geometry=line_geom, crs='EPSG:4326')
                 gdf_line['Name'] = ['Flight Trajectory'] 
-                gdf_line['geometry'] = line_geom
                 
                 os.makedirs('Trajectory_SHP', exist_ok=True)
                 gdf_line.to_file('Trajectory_SHP/' + file_name + '_FlightTrajectory.shp.zip')
