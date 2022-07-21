@@ -120,10 +120,10 @@ if uploaded:
                 # Build the trajectory shapefile
                 traj_gdf = gpd.GeoDataFrame(traj_df)
                 traj_points = gpd.points_from_xy(traj_gdf['lon'], traj_gdf['lat'])
-                line_geom = LineString(traj_points)
+                line_geom = [LineString(traj_points)]
                 
-                gdf_line = gpd.GeoDataFrame(geometry=line_geom, crs='EPSG:4326')
-                gdf_line['Name'] = ['Flight Trajectory'] 
+                name = ['Flight Trajectory']
+                gdf_line = gpd.GeoDataFrame(list(zip(name, line_geom)), columns=['Name', 'geometry'], crs='EPSG:4326')
                 
                 os.makedirs('Trajectory_SHP', exist_ok=True)
                 gdf_line.to_file('Trajectory_SHP/' + file_name + '_FlightTrajectory.shp.zip')
