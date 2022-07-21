@@ -7,6 +7,27 @@ import zipfile
 import os
 import pydeck as pdk
 
+@st.experimental_singleton(suppress_st_warning=True, allow_output_mutation=True)
+def create_df(df):
+    df_final = pd.DataFrame()
+    df_final['id'] = range(len(basis_col))
+    df_final['id'] = df_final.index
+    
+    for col in df.columns:
+        vals = []
+        if '_y' not in col and col != 'id': 
+            if col_len[col] < len(df[col]):
+                col_num = pd.to_numeric(df[col][:col_len[col]])
+            else:
+                col_num = pd.to_numeric(df[col])
+            for time in basis_col:
+                if time != '':
+                    index = abs(col_num - time).idxmin()
+                    vals.append(float(df[col[:-2] + '_y'][index]))
+            df_final[col.split(' > ')[1][:-2]] = vals
+    
+    return df_final
+
 st.set_page_config(layout="wide")
 
 st.title('GIS Visualization of Flight Log Data')
@@ -86,22 +107,7 @@ if uploaded:
             basis_col = list(map(float,[x for x in basis_col if x != ' ']))
             
             # Build a new dataframe based on the times
-            df_final = pd.DataFrame()
-            df_final['id'] = range(len(basis_col))
-            df_final['id'] = df_final.index
-        
-            for col in df.columns:
-                vals = []
-                if '_y' not in col and col != 'id': 
-                    if col_len[col] < len(df[col]):
-                        col_num = pd.to_numeric(df[col][:col_len[col]])
-                    else:
-                        col_num = pd.to_numeric(df[col])
-                    for time in basis_col:
-                        if time != '':
-                            index = abs(col_num - time).idxmin()
-                            vals.append(float(df[col[:-2] + '_y'][index]))
-                    df_final[col.split(' > ')[1][:-2]] = vals
+            df_final = create_df(df)
         
             with zipfile.ZipFile(file_name + '_Outputs.zip', 'w') as out_zip:
                 
@@ -147,6 +153,8 @@ if uploaded:
     view = pdk.data_utils.viewport_helpers.compute_view(points_df, view_proportion=1)
     level = int(str(view).split('"zoom": ')[-1].split('}')[0])
     
+    st.success('Processing Finished.')
+
     st.pydeck_chart(pdk.Deck(
         map_style='mapbox://styles/mapbox/satellite-streets-v11',
         initial_view_state=pdk.ViewState(
@@ -165,10 +173,7 @@ if uploaded:
                 pickable=True,
             ),
             ],
-    ))    
-        
-    st.success('Processing Finished.')
-    
+    ))   
     fp = open(file_name + '_Outputs.zip', 'rb')
     st.download_button(
         label="Download Data",
